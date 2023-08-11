@@ -1,42 +1,51 @@
 
 const express = require('express');
+const path=require('path');
+const Subscriber =require('./models/subscribers');
 const app = express()
-const Subscribers=require('./models/subscribers.js')
 
-// Your code goes here
 
-app.use(express("models"))
-app.get("/",(req,res)=>{
-    res.send("Get server database")
-})
-app.get("/sub",async(req,res)=>{
-    try{
-        let subscriberDetails = await Subscribers.find();
-        res.status(200).json(subscriberDetails);
-    }
-    catch(err){
-        res.status(500).json({message:err.message});
-    }
-})
+//to use static files we need to give permission of the public folder
+app.use(express.static('public'));
 
-app.get("/name",async(req,res)=>{
+//routes
+//API to render html file
+app.get("/", (req,res)=>{
+    res.sendFile(path.join(__dirname,"/index.html"))
+});
+
+//API to get all data of subscribers
+app.get("/subscribers", async (req,res)=>{
     try{
-        let subscriberDetails = await Subscribers.find({},{name:1,subscribedChannel:1});
-        res.json(subscriberDetails);
+        let subscribers=await Subscriber.find();
+        res.status(200).send(subscribers);
+        
+    }catch(error){
+        res.status(500);
     }
-    catch(err){
-        res.status(500).json({message:err.message});
-    }
-})
-app.get("/id",async(req,res)=>{
+});
+
+//API to get all subscribers by name and subscribedChannel 
+app.get("/subscribers/names", async (req,res)=>{
     try{
-        let subscriberDetails = await Subscribers.find();
-        res.json(subscriberDetails);
+        let subscribers=await Subscriber.find({},{name:1, subscribedChannel:1});
+        res.status(200).send(subscribers);     
+    }catch(error){
+        res.status(500);
     }
-    catch(err){
-        res.status(500).json({message:err.message});
+});
+
+//API to get subscribers by id 
+app.get("/subscribers/:id", async (req,res)=>{
+    try{
+        let subscribers=await Subscriber.findById(req.params.id);
+        res.status(200).send(subscribers);     
+    }catch(error){
+        res.status(400).send({message:"No Subscriber found related to this id."});
     }
-})
+});
+
+module.exports=app;
 
 
 
